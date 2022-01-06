@@ -91,3 +91,8 @@ def exec_cmd(cmd, verbose=True, skip_error=False):
 def get_cmd_output(cmd):
     sys.stdout.write('\nRunning command: %s ...' % cmd)
     return subprocess.Popen(shlex.split(cmd, posix=False), stdout=subprocess.PIPE)
+
+# TODO:
+def num():
+    from num2words import num2words
+    num2words(42, lang='it')
