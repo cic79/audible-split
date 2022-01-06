@@ -8,4 +8,5 @@ pip-tools==6.4.0
 pycparser==2.21
 srt==3.5.0
 tomli==2.0.0
+tqdm==4.62.3
 vosk==0.3.32
