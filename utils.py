@@ -37,6 +37,39 @@ def str_elapsed_time(start):
     return str_time(secs)
 
 
+def get_secs(time_str):
+    # Converte la stringa HH:MM:SS,SSS in secondi
+    h, m, s = time_str.strip().split(':')
+    return int(h) * 3600 + int(m) * 60 + float(s.replace(',', '.'))
+
+
+def get_elapsed_secs(from_time, to_time):
+    # Ritorna i secondi che intercorrono tra i due tempi.
+    # Il risultato viene convertito nell'intero più vicino.
+    return round(to_time - from_time)
+
+
+def get_cue_time(time_str):
+    # Converte la stringa HH:MM:SS,SSS in formato CUE MM:SS:FF
+    # FF sono i frame e ci sono 75 frame per secondo.
+    h, m, s = time_str.strip().split(':')
+    s, ms = s.split(',')
+    return f'{int(h)*60+int(m):#02}:{int(s):#02}:{int(0.075*int(ms)):#02}'
+
+
+def num_to_str(number):
+    # Trasforma un numero in stringa; eg: 1 -> uno
+    from num2words import num2words
+    if number == 21:
+        return 'ventuno'
+    return num2words(number, lang='it')
+
+
+def contains_word(text, word):
+    # Ritorna True se word è contenuta in text
+    return f' {word} ' in f' {text} '
+
+
 def is_tool(name):
     # Controlla se esiste il programma name
     return which(name) is not None
@@ -91,8 +124,3 @@ def exec_cmd(cmd, verbose=True, skip_error=False):
 def get_cmd_output(cmd):
     sys.stdout.write('\nRunning command: %s ...' % cmd)
     return subprocess.Popen(shlex.split(cmd, posix=False), stdout=subprocess.PIPE)
-
-# TODO:
-def num():
-    from num2words import num2words
-    num2words(42, lang='it')
