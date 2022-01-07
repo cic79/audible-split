@@ -24,7 +24,7 @@ OUTPUT_DIR = base_name_with_path
 MODEL = 'models/vosk-model-small-it'
 SAMPLE_RATE = 16000
 WORDS_PER_LINE = 7
-
+VERBOSE = False
 
 # Check existence of paths and programs
 if not os.path.exists(MODEL):
@@ -80,11 +80,16 @@ if cue_file_exists:
         if not overwrite_cue_file:
             sys.stderr.write(f'ERROR: cue file \'{CUE_FILE}\' already exists.')
             exit(1)
+output_dir_exists = os.path.exists(OUTPUT_DIR)
+if output_dir_exists:
+    sys.stderr.write(f'ERROR: output dir \'{OUTPUT_DIR}\' already exists.')
+    exit(1)
 
 # Convert mp3 in wav
 if not audio_file_exists or overwrite_audio_file:
+    sys.stdout.write(f'\nGenerating the wav file: \'{WAV_FILE}\'...')
     cmd = f'ffmpeg -y -v error -i "{AUDIO_FILE}" -ar {SAMPLE_RATE} -ac 1 "{WAV_FILE}"'
-    exec_cmd(cmd=cmd, verbose=True, skip_error=False)
+    exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 else:
     sys.stdout.write(f'\nReuse the existing file: \'{WAV_FILE}\'...')
 
@@ -111,7 +116,7 @@ else:
 
 # Convert output vosk in srt
 if not srt_file_exists or overwrite_srt_file:
-    sys.stdout.write(f'\nReading \'{OUTPUT_FILE}\' file...')
+    sys.stdout.write(f'\nReading \'{OUTPUT_FILE}\' file...\n')
     with open(OUTPUT_FILE, 'r') as f:
         results = f.readlines()
     subs = []
@@ -191,26 +196,32 @@ else:
     sys.stdout.write(f'\nReuse the existing file: \'{CUE_FILE}\'...')
 
 # Validate the cue file
+sys.stdout.write(f'\nValidating the cue file: \'{CUE_FILE}\'...')
 cmd = f'bash cue_validator.sh "{CUE_FILE}"'
-result = exec_cmd(cmd=cmd, verbose=True, skip_error=False)
+result = exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 if result:
     sys.stderr.write(f'ERROR: cue file \'{CUE_FILE}\' contains some errors:\n{result}')
     exit(1)
 
 # Extract the cover
+sys.stdout.write('\nExtracting the cover...')
 cmd = f'ffmpeg -y -v error -i "{AUDIO_FILE}" "{COVER_FILE}"'
-exec_cmd(cmd=cmd, verbose=True, skip_error=False)
+exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 
 # Split the mp3
+sys.stdout.write('\nSplitting the mp3...')
 cmd = f'mp3splt -f -o @n+-+@t -d "{OUTPUT_DIR}" -c "{CUE_FILE}" "{AUDIO_FILE}"'
-exec_cmd(cmd=cmd, verbose=True, skip_error=False)
+exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 
 # Add the cover to the splitted files
+sys.stdout.write('\nAdding the cover to the splitted files...')
 for file in os.listdir(os.fsencode(OUTPUT_DIR)):
     filename = os.fsdecode(file)
     if filename.endswith('.mp3'):
         cmd = f'mv -f "{OUTPUT_DIR}/{filename}" /tmp/audio.mp3'
-        exec_cmd(cmd=cmd, verbose=False, skip_error=False)
+        exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
         cmd = f'ffmpeg -v error -i "/tmp/audio.mp3" -i "{COVER_FILE}" -map 0:0 -map 1:0 -c copy -id3v2_version 3 ' \
               f'-metadata:s:v title="Album cover" -metadata:s:v comment="Cover (front)" "{OUTPUT_DIR}/{filename}"'
-        exec_cmd(cmd=cmd, verbose=False, skip_error=False)
+        exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
+
+sys.stdout.write('\nEnjoy your new splitted book!')
