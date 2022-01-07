@@ -191,7 +191,7 @@ if not cue_file_exists or overwrite_cue_file:
             f.write(f'    TITLE "{chapter_text}"\r\n')
             f.write(f'    INDEX 01 {get_cue_time(chapter_time)}\r\n')
             track_number += 1
-    sys.stdout.write(f'\nWrote \'{CUE_FILE}\' file...\n')
+    sys.stdout.write(f'\nWrote \'{CUE_FILE}\' file...')
 else:
     sys.stdout.write(f'\nReuse the existing file: \'{CUE_FILE}\'...')
 
@@ -210,7 +210,7 @@ exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 
 # Split the mp3
 sys.stdout.write('\nSplitting the mp3...')
-cmd = f'mp3splt -f -o @n+-+@t -d "{OUTPUT_DIR}" -c "{CUE_FILE}" "{AUDIO_FILE}"'
+cmd = f'mp3splt -f -q -o @n+-+@t -d "{OUTPUT_DIR}" -c "{CUE_FILE}" "{AUDIO_FILE}"'
 exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
 
 # Add the cover to the splitted files
