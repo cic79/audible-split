@@ -14,7 +14,7 @@ from utils import exec_cmd, is_tool, query_yes_no, get_secs, get_elapsed_secs, n
 
 AUDIO_FILE = '/home/fconte/Downloads/audible/James S.A. Corey - The Expanse 2 - Caliban. La guerra.mp3'
 base_name_with_path = AUDIO_FILE.rsplit('.', 1)[0]
-base_name = os.path.basename(base_name_with_path)
+PERFORMER, TITLE = os.path.basename(base_name_with_path).split(' - ', 1)
 WAV_FILE = f'{base_name_with_path}.wav'
 OUTPUT_FILE = f'{base_name_with_path}.output'
 SRT_FILE = f'{base_name_with_path}.srt'
@@ -95,7 +95,7 @@ else:
 
 # Generate output file with vosk
 if not output_file_exists or overwrite_output_file:
-    sys.stdout.write(f'\nReading \'{WAV_FILE}\' file...')
+    sys.stdout.write(f'\nReading \'{WAV_FILE}\' file...\n')
     with open(OUTPUT_FILE, 'w') as output:
         SetLogLevel(-1)
         model = Model(MODEL)
@@ -116,7 +116,7 @@ else:
 
 # Convert output vosk in srt
 if not srt_file_exists or overwrite_srt_file:
-    sys.stdout.write(f'\nReading \'{OUTPUT_FILE}\' file...\n')
+    sys.stdout.write(f'\nReading \'{OUTPUT_FILE}\' file...')
     with open(OUTPUT_FILE, 'r') as f:
         results = f.readlines()
     subs = []
@@ -171,12 +171,11 @@ with open(SRT_FILE, 'r') as f:
             break
 
 # Generate cue file
-PERFORMER = 'Audible'
 if not cue_file_exists or overwrite_cue_file:
     with open(CUE_FILE, 'w') as f:
         track_number = 1
         f.write(f'PERFORMER "{PERFORMER}"\r\n')
-        f.write(f'TITLE "{base_name}"\r\n')
+        f.write(f'TITLE "{TITLE}"\r\n')
         f.write(f'FILE "{AUDIO_FILE}" MP3\r\n')
         first_chapter_time = chapters[0][0]
         if get_secs(first_chapter_time) > 6:
