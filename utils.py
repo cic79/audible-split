@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import shlex
 import subprocess
 import sys
 import time
-import shlex
 from shutil import which
 
 
@@ -102,6 +103,20 @@ def query_yes_no(question, default='yes'):
             return valid[choice]
         else:
             sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
+
+
+def compute_file(file, label):
+    file_exists = os.path.exists(file)
+    overwrite_file = False
+    if file_exists:
+        sys.stdout.write(f'{label.capitalize()} \'{file}\' already exists.\n')
+        reuse_file = query_yes_no('Do you wanna continue and reuse the existing file?')
+        if not reuse_file:
+            overwrite_file = query_yes_no('Do you wanna continue and overwrite the existing file?')
+            if not overwrite_file:
+                sys.stderr.write(f'ERROR: {label.lower()} \'{file}\' already exists.')
+                exit(1)
+    return not file_exists or overwrite_file
 
 
 def exec_cmd(cmd, verbose=True, skip_error=False):

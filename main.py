@@ -10,7 +10,8 @@ import srt
 from tqdm import tqdm
 from vosk import Model, KaldiRecognizer, SetLogLevel
 
-from utils import exec_cmd, is_tool, query_yes_no, get_secs, get_elapsed_secs, num_to_str, contains_word, get_cue_time
+from utils import compute_file, exec_cmd, is_tool, get_secs, get_elapsed_secs, num_to_str, contains_word, \
+    get_cue_time
 
 AUDIO_FILE = '/home/fconte/Downloads/audible/James S.A. Corey - The Expanse 2 - Caliban. La guerra.mp3'
 base_name_with_path = AUDIO_FILE.rsplit('.', 1)[0]
@@ -40,53 +41,16 @@ if not is_tool('ffmpeg'):
 if not is_tool('mp3splt'):
     sys.stderr.write('ERROR: mp3splt not installed; please run:\nsudo apt install -y mp3splt')
     exit(1)
-audio_file_exists = os.path.exists(WAV_FILE)
-overwrite_audio_file = False
-if audio_file_exists:
-    sys.stdout.write(f'Audio file \'{WAV_FILE}\' already exists.\n')
-    reuse_file = query_yes_no('Do you wanna continue and reuse the existing file?')
-    if not reuse_file:
-        overwrite_audio_file = query_yes_no('Do you wanna continue and overwrite the existing file?')
-        if not overwrite_audio_file:
-            sys.stderr.write(f'ERROR: audio file \'{WAV_FILE}\' already exists')
-            exit(1)
-output_file_exists = os.path.exists(OUTPUT_FILE)
-overwrite_output_file = False
-if output_file_exists:
-    sys.stdout.write(f'Output file \'{OUTPUT_FILE}\' already exists.\n')
-    reuse_file = query_yes_no('Do you wanna continue and reuse the existing file?')
-    if not reuse_file:
-        overwrite_output_file = query_yes_no('Do you wanna continue and overwrite the existing file?')
-        if not overwrite_output_file:
-            sys.stderr.write(f'ERROR: output file \'{OUTPUT_FILE}\' already exists.')
-            exit(1)
-srt_file_exists = os.path.exists(SRT_FILE)
-overwrite_srt_file = False
-if srt_file_exists:
-    sys.stdout.write(f'Srt file \'{SRT_FILE}\' already exists.\n')
-    reuse_file = query_yes_no('Do you wanna continue and reuse the existing file?')
-    if not reuse_file:
-        overwrite_srt_file = query_yes_no('Do you wanna continue and overwrite the existing file?')
-        if not overwrite_srt_file:
-            sys.stderr.write(f'ERROR: srt file \'{SRT_FILE}\' already exists.')
-            exit(1)
-cue_file_exists = os.path.exists(CUE_FILE)
-overwrite_cue_file = False
-if cue_file_exists:
-    sys.stdout.write(f'Cue file \'{CUE_FILE}\' already exists.\n')
-    reuse_file = query_yes_no('Do you wanna continue and reuse the existing file?')
-    if not reuse_file:
-        overwrite_cue_file = query_yes_no('Do you wanna continue and overwrite the existing file?')
-        if not overwrite_cue_file:
-            sys.stderr.write(f'ERROR: cue file \'{CUE_FILE}\' already exists.')
-            exit(1)
-output_dir_exists = os.path.exists(OUTPUT_DIR)
-if output_dir_exists:
+compute_audio_file = compute_file(WAV_FILE, 'audio file')
+compute_output_file = compute_file(OUTPUT_FILE, 'output file')
+compute_srt_file = compute_file(SRT_FILE, 'srt file')
+compute_cue_file = compute_file(CUE_FILE, 'cue file')
+if os.path.exists(OUTPUT_DIR):
     sys.stderr.write(f'ERROR: output dir \'{OUTPUT_DIR}\' already exists.')
     exit(1)
 
 # Convert mp3 in wav
-if not audio_file_exists or overwrite_audio_file:
+if compute_audio_file:
     sys.stdout.write(f'\nGenerating the wav file: \'{WAV_FILE}\'...')
     cmd = f'ffmpeg -y -v error -i "{AUDIO_FILE}" -ar {SAMPLE_RATE} -ac 1 "{WAV_FILE}"'
     exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
@@ -94,7 +58,7 @@ else:
     sys.stdout.write(f'\nReuse the existing file: \'{WAV_FILE}\'...')
 
 # Generate output file with vosk
-if not output_file_exists or overwrite_output_file:
+if compute_output_file:
     sys.stdout.write(f'\nReading \'{WAV_FILE}\' file...\n')
     with open(OUTPUT_FILE, 'w') as output:
         SetLogLevel(-1)
@@ -115,7 +79,7 @@ else:
     sys.stdout.write(f'\nReuse the existing file: \'{OUTPUT_FILE}\'...')
 
 # Convert output vosk in srt
-if not srt_file_exists or overwrite_srt_file:
+if compute_srt_file:
     sys.stdout.write(f'\nReading \'{OUTPUT_FILE}\' file...')
     with open(OUTPUT_FILE, 'r') as f:
         results = f.readlines()
@@ -126,13 +90,11 @@ if not srt_file_exists or overwrite_srt_file:
             continue
         words = jres['result']
         for j in range(0, len(words), WORDS_PER_LINE):
-            line = words[j: j + WORDS_PER_LINE]
-            s = srt.Subtitle(index=len(subs),
-                             content=' '.join([l['word'] for l in line]),
-                             start=datetime.timedelta(seconds=line[0]['start']),
-                             end=datetime.timedelta(seconds=line[-1]['end']))
+            lines = words[j: j + WORDS_PER_LINE]
+            s = srt.Subtitle(index=len(subs), content=' '.join([line['word'] for line in lines]),
+                             start=datetime.timedelta(seconds=lines[0]['start']),
+                             end=datetime.timedelta(seconds=lines[-1]['end']))
             subs.append(s)
-
     with open(SRT_FILE, 'w') as f:
         f.write(srt.compose(subs))
     sys.stdout.write(f'\nWrote \'{SRT_FILE}\' file...')
@@ -171,7 +133,7 @@ with open(SRT_FILE, 'r') as f:
             break
 
 # Generate cue file
-if not cue_file_exists or overwrite_cue_file:
+if compute_cue_file:
     with open(CUE_FILE, 'w') as f:
         track_number = 1
         f.write(f'PERFORMER "{PERFORMER}"\r\n')

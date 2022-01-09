@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from datetime import datetime
 
 from bs4 import BeautifulSoup
 
@@ -12,7 +13,7 @@ CONTENT = '''
 <table role="table" class="mc-table sl-list-container"></table>
 </html>
 '''
-title = ''
+performer = title = ''
 podcasts = []
 xml_name = xml_link = img_name = img_link = None
 soup = BeautifulSoup(CONTENT, 'html.parser')
@@ -29,7 +30,7 @@ for result in results:
         img_name = filename
         img_link = link
     else:
-        podcasts.append({'name': filename, 'link': link})
+        podcasts.append({'name': name, 'link': link})
 
 if not(xml_name and xml_link and img_name and img_link):
     sys.stderr.write('ERROR: Houston we have a problem! At least one file not found (xml or image).')
@@ -42,22 +43,22 @@ audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
     <channel>
         <atom:link href="{xml_link}" rel="self" type="application/rss+xml"></atom:link>
         <title><![CDATA[{title}]]></title>
-        <itunes:author>Audible</itunes:author>
+        <itunes:author>{performer}</itunes:author>
         <language>it-it</language>
         <itunes:name>{title}</itunes:name>
         <itunes:image href="{img_link}"></itunes:image>
         <googleplay:image href="{img_link}"></googleplay:image>
 '''
-audible_item = f'''
+audible_item = '''
         <item>
             <title><![CDATA[%(podcast_name)s]]></title>
             <link>%(podcast_link)s</link>
-            <description></description>
-            <itunes:author></itunes:author>
-            <itunes:image href="{img_link}"></itunes:image>
-            <googleplay:image href="{img_link}"></googleplay:image>
+            <description>%(title)s</description>
+            <itunes:author>%(performer)s</itunes:author>
+            <itunes:image href="%(img_link)s"></itunes:image>
+            <googleplay:image href="%(img_link)s"></googleplay:image>
             <enclosure length="10000" type="audio/mpeg" url="%(podcast_link)s"></enclosure>
-            <pubDate>Thu, 28 Dec 2021 18:55:26 +0100</pubDate>
+            <pubDate>%(date_now)s</pubDate>
             <guid>%(podcast_link)s</guid>
         </item>
 '''
@@ -66,7 +67,9 @@ audible_end = '''
 </rss>'''
 audible = audible_start
 for podcast in podcasts:
-    audible += audible_item % {'podcast_name': podcast['name'], 'podcast_link': podcast['link']}
+    date_now = datetime.now().strftime('%a, %-d %b %Y %X +0100')
+    audible += audible_item % {'performer': performer, 'title': title, 'img_link': img_link, 'date_now': date_now,
+                               'podcast_name': podcast['name'], 'podcast_link': podcast['link']}
 audible += audible_end
 with open('podcast.xml', 'w') as f:
     f.write(audible)
