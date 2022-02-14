@@ -31,9 +31,12 @@ for result in results:
         img_link = link
     else:
         podcasts.append({'name': name, 'link': link})
-
-if not(xml_name and xml_link and img_name and img_link):
-    sys.stderr.write('ERROR: Houston we have a problem! At least one file not found (xml or image).')
+if not xml_name:
+    xml_name = 'podcast.xml'
+if not xml_link:
+    xml_link = 'https://www.dropbox.com/sh/2zbtmzxkk44qmgk/AADDzVZ5MiKH22ClrLqSVzJpa/podcast.xml?dl=0'
+if not(img_name and img_link):
+    sys.stderr.write('ERROR: Houston we have a problem! At least one image not found.')
     exit(1)
 
 audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
