@@ -13,7 +13,7 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 from utils import compute_file, exec_cmd, is_tool, get_secs, get_elapsed_secs, num_to_str, contains_word, \
     get_cue_time
 
-AUDIO_FILE = '/home/fconte/Downloads/audible/James S.A. Corey - The Expanse 4 - Cibola Burn. La cura.mp3'
+AUDIO_FILE = '/home/fconte/Downloads/audible/James S.A. Corey - The Expanse 5 - Nemesis Games. L\'esodo.mp3'
 base_name_with_path = AUDIO_FILE.rsplit('.', 1)[0]
 PERFORMER, TITLE = os.path.basename(base_name_with_path).split(' - ', 1)
 WAV_FILE = f'{base_name_with_path}.wav'
@@ -102,8 +102,12 @@ else:
     sys.stdout.write(f'\nReuse the existing file: \'{SRT_FILE}\'...')
 
 # Find chapters
-KEYWORDS_REPLACE = {'prologo': 'prologo', 'interludio': 'interludio', 'interlocutorio': 'interludio',
-                    'epilogo': 'epilogo'}
+VALUE_KEYWORDS = {
+    'prologo': ['prologo'],
+    'interludio': ['interludio', 'interlocutorio', 'intermedio', 'intervenuti'],
+    'epilogo': ['epilogo']
+}
+KEYWORDS_REPLACE = {a: k for k, v in VALUE_KEYWORDS.items() for a in v}
 KEYWORDS = KEYWORDS_REPLACE.keys()
 SILENCE_GAP = 3
 chapter = 1
@@ -130,6 +134,9 @@ with open(SRT_FILE, 'r') as f:
             elif contains_word(sub_text, num_to_str(chapter)):
                 chapters.append((sub_from_time_original, f'Capitolo {chapter}', sub_text))
                 chapter += 1
+            else:
+                # Is it an undetected keyword?
+                sys.stdout.write(f'\nDetected the following new keyword: \'{sub_text}\' at {sub_from_time_original}')
         before_sub_to_time = sub_to_time
         if sub_number == '':
             break
