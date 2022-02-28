@@ -2,7 +2,7 @@
 # Use pipdeptree -a -r to check dependencies
 beautifulsoup4==4.10.0
 cffi==1.15.0
-click==8.0.3
+click==8.0.4
 docopt==0.6.2
 num2words==0.5.10
 pep517==0.12.0
@@ -12,5 +12,5 @@ pycparser==2.21
 srt==3.5.1
 soupsieve==2.3.1
 tomli==2.0.1
-tqdm==4.62.3
+tqdm==4.63.0
 vosk==0.3.32
