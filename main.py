@@ -45,6 +45,7 @@ compute_audio_file = compute_file(WAV_FILE, 'audio file')
 compute_output_file = compute_file(OUTPUT_FILE, 'output file')
 compute_srt_file = compute_file(SRT_FILE, 'srt file')
 compute_cue_file = compute_file(CUE_FILE, 'cue file')
+compute_cover_file = compute_file(COVER_FILE, 'cover file')
 if os.path.exists(OUTPUT_DIR):
     sys.stderr.write(f'ERROR: output dir \'{OUTPUT_DIR}\' already exists.')
     exit(1)
@@ -109,7 +110,7 @@ VALUE_KEYWORDS = {
 }
 KEYWORDS_REPLACE = {a: k for k, v in VALUE_KEYWORDS.items() for a in v}
 KEYWORDS = KEYWORDS_REPLACE.keys()
-SILENCE_GAP = 3
+SILENCE_GAP = 2.5
 chapter = 1
 chapters = []
 
@@ -174,9 +175,12 @@ if result:
     exit(1)
 
 # Extract the cover
-sys.stdout.write('\nExtracting the cover...')
-cmd = f'ffmpeg -y -v error -i "{AUDIO_FILE}" "{COVER_FILE}"'
-exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
+if compute_cover_file:
+    sys.stdout.write('\nExtracting the cover...')
+    cmd = f'ffmpeg -y -v error -i "{AUDIO_FILE}" "{COVER_FILE}"'
+    exec_cmd(cmd=cmd, verbose=VERBOSE, skip_error=False)
+else:
+    sys.stdout.write(f'\nReuse the existing file: \'{COVER_FILE}\'...')
 
 # Split the mp3
 sys.stdout.write('\nSplitting the mp3...')

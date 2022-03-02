@@ -59,16 +59,22 @@ def get_cue_time(time_str):
 
 
 def num_to_str(number):
-    # Trasforma un numero in stringa; eg: 1 -> uno
+    # Trasforma un numero in stringa o lista di stringhe; eg: 1 -> uno
     from num2words import num2words
     if number == 21:
-        return 'ventuno'
+        return [num2words(number, lang='it'), 'ventuno']
+    if number == 29:
+        return [num2words(number, lang='it'), 'venti love']
     return num2words(number, lang='it')
 
 
 def contains_word(text, word):
     # Ritorna True se word è contenuta in text
-    return f' {word} ' in f' {text} '
+    # word può essere una stringa o una lista di stringhe
+    words = word
+    if not isinstance(word, list):
+        words = [word]
+    return any(f' {word} ' in f' {text} ' for word in words)
 
 
 def is_tool(name):
