@@ -1,4 +1,5 @@
-# pur; pip-sync
+# Use pur to update requirements
+# pur
 # Use pipdeptree -a -r to check dependencies
 beautifulsoup4==4.10.0
 cffi==1.15.0
