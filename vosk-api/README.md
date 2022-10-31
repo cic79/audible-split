@@ -1,17 +1,18 @@
 # Vosk Speech Recognition Toolkit
 
 Vosk is an offline open source speech recognition toolkit. It enables
-speech recognition models for 18 languages and dialects - English, Indian
+speech recognition for 20+ languages and dialects - English, Indian
 English, German, French, Spanish, Portuguese, Chinese, Russian, Turkish,
 Vietnamese, Italian, Dutch, Catalan, Arabic, Greek, Farsi, Filipino,
-Ukrainian.
+Ukrainian, Kazakh, Swedish, Japanese, Esperanto, Hindi, Czech, Polish.
+More to come.
 
 Vosk models are small (50 Mb) but provide continuous large vocabulary
 transcription, zero-latency response with streaming API, reconfigurable
 vocabulary and speaker identification.
 
 Speech recognition bindings implemented for various programming languages
-like Python, Java, Node.JS, C#, C++ and others.
+like Python, Java, Node.JS, C#, C++, Rust, Go and others.
 
 Vosk supplies speech recognition for chatbots, smart home appliances,
 virtual assistants. It can also create subtitles for movies,

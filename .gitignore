@@ -1,11 +1,5 @@
-# IDE directory
-/.idea/
-/.project/
-/.pydevproject/
-/.settings/
-.vscode/
-/venv/
+.idea/
+models/
 
-# Files to be ignored
 *.pyc
 podcast.xml
