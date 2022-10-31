@@ -6,12 +6,24 @@ SCRIPT_DIR="$(cd "$( dirname "$(readlink -f "${BASH_SOURCE[0]}" )")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 CURRENT_DIR="$(pwd)"
 
-EN_VER=0.15
-IT_VER=0.22
+VOSK_EN=vosk-model-small-en-us
+VOSK_IT=vosk-model-small-it
+VOSK_EN_VER="${VOSK_EN}-0.15"
+VOSK_IT_VER="${VOSK_IT}-0.22"
 
 cd "$ROOT_DIR/models"
-wget "https://alphacephei.com/vosk/models/vosk-model-small-en-us-${EN_VER}.zip"
-wget "https://alphacephei.com/vosk/models/vosk-model-small-it-${IT_VER}.zip"
-tar zxvf vosk-model*.zip
+
+rm -rf *
+
+wget "https://alphacephei.com/vosk/models/${VOSK_EN_VER}.zip"
+unzip "${VOSK_EN_VER}"
+
+wget "https://alphacephei.com/vosk/models/${VOSK_IT_VER}.zip"
+unzip "${VOSK_IT_VER}"
+
+mv "${VOSK_EN_VER}" "${VOSK_EN}"
+mv "${VOSK_IT_VER}" "${VOSK_IT}"
+
+rm "${VOSK_EN_VER}.zip" "${VOSK_IT_VER}.zip"
 
 cd "$CURRENT_DIR"
