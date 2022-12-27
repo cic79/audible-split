@@ -46,10 +46,11 @@ if [ "$(echo " WAVE MP3 AIFF " | grep -o " $(grep -m1 FILE "$1" | sed -n 's/.* /
     fn=$(echo $line | grep -o 'FILE.*' | cut -d\" -f2)
     if [ "$fn" ]; then [ -f "$fn" ] || echo "[$l] Invalid referenced file"; fi
 
-    [ $((10#$(echo "$line" | grep -o "..:..:.." | cut -d: -f2))) -gt 59 ] &&
-      echo "[$l] Wrong time format [..:XX:..]"
-    [ $((10#$(echo "$line" | grep -o "..:..:.." | cut -d: -f3))) -gt 74 ] &&
-      echo "[$l] Wrong time format [..:..:XX]"
+    value=$(echo "$line" | grep -o "..:..:.." | cut -d: -f2)
+    [ ! -z  "${value}" ] && [ $((10#$value)) -gt 59 ] && echo "[$l] Wrong time format [..:XX:..]"
+
+    value=$(echo "$line" | grep -o "..:..:.." | cut -d: -f3)
+    [ ! -z  "${value}" ] && [ $((10#$value)) -gt 74 ] && echo "[$l] Wrong time format [..:..:XX]"
 
     [ "$(echo "$line" | grep -o '^FILE')" ] && [ "$IDX" == "INDEX 00" ] &&
       echo "[$l] Non-compliant cue-sheet"
