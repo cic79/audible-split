@@ -61,6 +61,8 @@ def get_cue_time(time_str):
 def num_to_str(number):
     # Trasforma un numero in stringa o lista di stringhe; eg: 1 -> uno
     from num2words import num2words
+    if number == 1:
+        return [num2words(number, lang='it'), 'una']
     if number == 21:
         return [num2words(number, lang='it'), 'ventuno']
     if number == 29:
