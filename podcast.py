@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 
@@ -10,14 +10,14 @@ from bs4 import BeautifulSoup
 # https://www.dropbox.com/sh/2zbtmzxkk44qmgk/AACfbAgwyD0A9TAB3EdANO9ja?dl=0
 CONTENT = '''
 <html>
-<table role="table" class="mc-table sl-list-container"></table>
+<div role="table" ...></div>
 </html>
 '''
 performer = title = ''
 podcasts = []
 xml_name = xml_link = img_name = img_link = None
 soup = BeautifulSoup(CONTENT, 'html.parser')
-results = soup.find(class_='mc-table').find_all('a', class_='')
+results = soup.find(role='table').find_all('a')
 for result in results:
     link = result.attrs['href'].split('?')[0] + '?dl=1'
     filename = result.attrs['aria-label']
@@ -35,7 +35,7 @@ if not xml_name:
     xml_name = 'podcast.xml'
 if not xml_link:
     xml_link = 'https://www.dropbox.com/sh/2zbtmzxkk44qmgk/AADDzVZ5MiKH22ClrLqSVzJpa/podcast.xml?dl=0'
-if not(img_name and img_link):
+if not (img_name and img_link):
     sys.stderr.write('ERROR: Houston we have a problem! At least one image not found.')
     exit(1)
 
@@ -69,10 +69,13 @@ audible_end = '''
     </channel>
 </rss>'''
 audible = audible_start
+date = date_now = datetime.now() - timedelta(days=1 * len(podcasts))
+date_delta = timedelta(days=1)
 for podcast in podcasts:
-    date_now = datetime.now().strftime('%a, %-d %b %Y %X +0100')
+    date_now = date.strftime('%a, %-d %b %Y %X +0100')
     audible += audible_item % {'performer': performer, 'title': title, 'img_link': img_link, 'date_now': date_now,
                                'podcast_name': podcast['name'], 'podcast_link': podcast['link']}
+    date += date_delta
 audible += audible_end
 with open('podcast.xml', 'w') as f:
     f.write(audible)

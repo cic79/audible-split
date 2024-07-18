@@ -13,7 +13,7 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 from utils import compute_file, exec_cmd, is_tool, get_secs, get_elapsed_secs, num_to_str, contains_word, \
     get_cue_time
 
-AUDIO_FILE = "/home/fconte/Downloads/audible/James S.A. Corey - The Expanse 8 - Tiamat's Wrath, L'ira di Tiamat.mp3"
+AUDIO_FILE = "/home/fconte/Downloads/audible/Ken Follett - Il martello dell'Eden.mp3"
 base_name_with_path = AUDIO_FILE.rsplit('.', 1)[0]
 PERFORMER, TITLE = os.path.basename(base_name_with_path).split(' - ', 1)
 WAV_FILE = f'{base_name_with_path}.wav'
