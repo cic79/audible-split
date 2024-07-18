@@ -39,6 +39,8 @@ typedef struct VoskSpkModel VoskSpkModel;
  *  speaker information and so on */
 typedef struct VoskRecognizer VoskRecognizer;
 
+/** Inverse text normalization */
+typedef struct VoskTextProcessor VoskTextProcessor;
 
 /**
  * Batch model object
@@ -77,7 +79,7 @@ int vosk_model_find_word(VoskModel *model, const char *word);
 /** Loads speaker model data from the file and returns the model object
  *
  * @param model_path: the path of the model on the filesystem
- * @returns model object or NULL if problem occured */
+ * @returns model object or NULL if problem occurred */
 VoskSpkModel *vosk_spk_model_new(const char *model_path);
 
 
@@ -217,6 +219,28 @@ void vosk_recognizer_set_partial_words(VoskRecognizer *recognizer, int partial_w
  */
 void vosk_recognizer_set_nlsml(VoskRecognizer *recognizer, int nlsml);
 
+typedef enum VoskEpMode {
+    VOSK_EP_ANSWER_DEFAULT = 0,
+    VOSK_EP_ANSWER_SHORT = 1,
+    VOSK_EP_ANSWER_LONG = 2,
+    VOSK_EP_ANSWER_VERY_LONG = 3,
+} VoskEndpointerMode;
+
+/**
+ * Set endpointer scaling factor
+ *
+ * @param mode - Endpointer mode
+ **/
+void vosk_recognizer_set_endpointer_mode(VoskRecognizer *recognizer,  VoskEndpointerMode mode);
+
+/**
+ * Set endpointer delays
+ *
+ * @param t_start_max     timeout for stopping recognition in case of initial silence (usually around 5.0)
+ * @param t_end           timeout for stopping recognition in milliseconds after we recognized something (usually around 0.5 - 1.0)
+ * @param t_max           timeout for forcing utterance end in milliseconds (usually around 20-30)
+ **/
+void vosk_recognizer_set_endpointer_delays(VoskRecognizer *recognizer, float t_start_max, float t_end, float t_max);
 
 /** Accept voice data
  *
@@ -298,7 +322,7 @@ void vosk_recognizer_free(VoskRecognizer *recognizer);
  *  @param log_level the level
  *     0 - default value to print info and error messages but no debug
  *     less than 0 - don't print info messages
- *     greather than 0 - more verbose mode
+ *     greater than 0 - more verbose mode
  */
 void vosk_set_log_level(int log_level);
 
@@ -353,6 +377,15 @@ void vosk_batch_recognizer_pop(VoskBatchRecognizer *recognizer);
 
 /** Get amount of pending chunks for more intelligent waiting */
 int vosk_batch_recognizer_get_pending_chunks(VoskBatchRecognizer *recognizer);
+
+/** Create text processor */
+VoskTextProcessor *vosk_text_processor_new(const char *tagger, const char *verbalizer);
+
+/** Release text processor */
+void vosk_text_processor_free(VoskTextProcessor *processor);
+
+/** Convert string */
+char *vosk_text_processor_itn(VoskTextProcessor *processor, const char *input);
 
 #ifdef __cplusplus
 }

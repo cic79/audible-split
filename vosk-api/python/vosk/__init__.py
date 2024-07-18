@@ -3,6 +3,7 @@ import sys
 import srt
 import datetime
 import json
+import enum
 
 import requests
 from urllib.request import urlretrieve
@@ -57,7 +58,8 @@ class Model:
             raise Exception("Failed to create a model")
 
     def __del__(self):
-        _c.vosk_model_free(self._handle)
+        if _c is not None:
+            _c.vosk_model_free(self._handle)
 
     def vosk_model_find_word(self, word):
         return _c.vosk_model_find_word(self._handle, word.encode("utf-8"))
@@ -140,6 +142,12 @@ class SpkModel:
     def __del__(self):
         _c.vosk_spk_model_free(self._handle)
 
+class EndpointerMode(enum.Enum):
+    DEFAULT = 0
+    SHORT = 1
+    LONG = 2
+    VERY_LONG = 3
+
 class KaldiRecognizer:
 
     def __init__(self, *args):
@@ -171,6 +179,12 @@ class KaldiRecognizer:
 
     def SetNLSML(self, enable_nlsml):
         _c.vosk_recognizer_set_nlsml(self._handle, 1 if enable_nlsml else 0)
+
+    def SetEndpointerMode(self, mode):
+        _c.vosk_recognizer_set_endpointer_mode(self._handle, mode.value)
+
+    def SetEndpointerDelays(self, t_start_max, t_end, t_max):
+        _c.vosk_recognizer_set_endpointer_delays(self._handle, t_start_max, t_end, t_max)
 
     def SetSpkModel(self, spk_model):
         _c.vosk_recognizer_set_spk_model(self._handle, spk_model._handle)
@@ -273,3 +287,17 @@ class BatchRecognizer:
 
     def GetPendingChunks(self):
         return _c.vosk_batch_recognizer_get_pending_chunks(self._handle)
+
+class Processor:
+
+    def __init__(self, *args):
+        self._handle = _c.vosk_text_processor_new(args[0].encode('utf-8'), args[1].encode('utf-8'))
+
+        if self._handle == _ffi.NULL:
+            raise Exception("Failed to create processor")
+
+    def __del__(self):
+        _c.vosk_text_processor_free(self._handle)
+
+    def process(self, text):
+        return _ffi.string(_c.vosk_text_processor_itn(self._handle, text.encode('utf-8'))).decode('utf-8')

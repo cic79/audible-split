@@ -1,7 +1,8 @@
 package vosk
 
 // #cgo CPPFLAGS: -I ${SRCDIR}/../src
-// #cgo LDFLAGS: -L ${SRCDIR}/../src -lvosk -ldl -lpthread
+// #cgo !windows LDFLAGS: -L ${SRCDIR}/../src -lvosk -ldl -lpthread
+// #cgo windows LDFLAGS: -L ${SRCDIR}/../src -lvosk -lpthread
 // #include <stdlib.h>
 // #include <vosk_api.h>
 import "C"
@@ -100,6 +101,13 @@ func NewRecognizerGrm(model *VoskModel, sampleRate float64, grammar string) (*Vo
 // SetSpkModel adds a speaker model to an already initialized recognizer.
 func (r *VoskRecognizer) SetSpkModel(spkModel *VoskSpkModel) {
 	C.vosk_recognizer_set_spk_model(r.rec, spkModel.spkModel)
+}
+
+// SetGrm sets which phrases to recognize on an already initialized recognizer.
+func (r *VoskRecognizer) SetGrm(grammar string) {
+	cgrammar := C.CString(grammar)
+	defer C.free(unsafe.Pointer(cgrammar))
+	C.vosk_recognizer_set_grm(r.rec, cgrammar)
 }
 
 // SetMaxAlternatives configures the recognizer to output n-best results.

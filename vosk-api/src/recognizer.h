@@ -52,6 +52,8 @@ class Recognizer {
         void SetWords(bool words);
         void SetPartialWords(bool partial_words);
         void SetNLSML(bool nlsml);
+        void SetEndpointerMode(int mode);
+        void SetEndpointerDelays(float t_start_max, float t_end, float t_max);
         bool AcceptWaveform(const char *data, int len);
         bool AcceptWaveform(const short *sdata, int len);
         bool AcceptWaveform(const float *fdata, int len);
@@ -81,6 +83,8 @@ class Recognizer {
         fst::StdVectorFst *g_fst_ = nullptr; // dynamically constructed grammar
         OnlineNnet2FeaturePipeline *feature_pipeline_ = nullptr;
         OnlineSilenceWeighting *silence_weighting_ = nullptr;
+        // Endpointer
+        kaldi::OnlineEndpointConfig endpoint_config_;
 
         // Speaker identification
         SpkModel *spk_model_ = nullptr;

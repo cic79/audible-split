@@ -119,6 +119,8 @@ Recognizer::~Recognizer() {
 
 void Recognizer::InitState()
 {
+    endpoint_config_ = model_->endpoint_config_;
+
     frame_offset_ = 0;
     samples_processed_ = 0;
     samples_round_start_ = 0;
@@ -218,6 +220,47 @@ void Recognizer::SetNLSML(bool nlsml)
     nlsml_ = nlsml;
 }
 
+void Recognizer::SetEndpointerMode(int mode)
+{
+    float scale = 1.0;
+    switch(mode) {
+        case 1:
+           scale = 0.75;
+           break;
+        case 2:
+           scale = 1.50;
+           break;
+        case 3:
+           scale = 4.0;
+           break;
+    }
+    KALDI_LOG << "Updating endpointer scale " << scale;
+    endpoint_config_ = model_->endpoint_config_;
+    endpoint_config_.rule2.min_trailing_silence *= scale;
+    endpoint_config_.rule3.min_trailing_silence *= scale;
+    endpoint_config_.rule4.min_trailing_silence *= scale;
+}
+
+void Recognizer::SetEndpointerDelays(float t_start_max, float t_end, float t_max)
+{
+    float rule1, rule2, rule3, rule4, rule5;
+
+    rule1 = t_start_max;
+    rule2 = t_end;
+    rule3 = t_end + 0.5;
+    rule4 = t_end + 1.0;
+    rule5 = t_max;
+
+    KALDI_LOG << "Updating endpointer delays " << rule1 << "," << rule2 << "," << rule3 << "," << rule4 << "," << rule5;
+    endpoint_config_ = model_->endpoint_config_;
+    endpoint_config_.rule1.min_trailing_silence = rule1;
+    endpoint_config_.rule2.min_trailing_silence = rule2;
+    endpoint_config_.rule3.min_trailing_silence = rule3;
+    endpoint_config_.rule4.min_trailing_silence = rule4;
+    endpoint_config_.rule5.min_utterance_length = rule5;
+}
+
+
 void Recognizer::SetSpkModel(SpkModel *spk_model)
 {
     if (state_ == RECOGNIZER_RUNNING) {
@@ -232,7 +275,7 @@ void Recognizer::SetSpkModel(SpkModel *spk_model)
 void Recognizer::SetGrm(char const *grammar)
 {
     if (state_ == RECOGNIZER_RUNNING) {
-        KALDI_ERR << "Can't add speaker model to already running recognizer";
+        KALDI_ERR << "Can't add grammar to already running recognizer";
         return;
     }
 
@@ -367,7 +410,7 @@ bool Recognizer::AcceptWaveform(Vector<BaseFloat> &wdata)
         spk_feature_->AcceptWaveform(sample_frequency_, wdata);
     }
 
-    if (decoder_->EndpointDetected(model_->endpoint_config_)) {
+    if (decoder_->EndpointDetected(endpoint_config_)) {
         return true;
     }
 

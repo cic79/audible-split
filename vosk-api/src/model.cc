@@ -24,6 +24,12 @@
 #include <fst/matcher-fst.h>
 #include <fst/extensions/ngram/ngram-fst.h>
 
+
+#ifdef HAVE_MKL
+// We need to set num threads
+#include <mkl.h>
+#endif
+
 namespace fst {
 
 static FstRegisterer<StdOLabelLookAheadFst> OLabelLookAheadFst_StdArc_registerer;
@@ -106,6 +112,10 @@ static void KaldiLogHandler(const LogMessageEnvelope &env, const char *message)
 Model::Model(const char *model_path) : model_path_str_(model_path) {
 
     SetLogHandler(KaldiLogHandler);
+
+#ifdef HAVE_MKL
+    mkl_set_num_threads(1);
+#endif
 
     struct stat buffer;
     string am_v2_path = model_path_str_ + "/am/final.mdl";
@@ -244,6 +254,7 @@ void Model::ReadDataFiles()
 
     decodable_info_ = new nnet3::DecodableNnetSimpleLoopedInfo(decodable_opts_,
                                                                nnet_);
+
     if (stat(final_ie_rxfilename_.c_str(), &buffer) == 0) {
         KALDI_LOG << "Loading i-vector extractor from " << final_ie_rxfilename_;
 
@@ -258,6 +269,8 @@ void Model::ReadDataFiles()
 
         feature_info_.use_ivectors = true;
         feature_info_.ivector_extractor_info.Init(ivector_extraction_opts);
+    } else if (nnet_->IvectorDim() > 0) {
+        KALDI_ERR << "Can't find required ivector extractor";
     } else {
         feature_info_.use_ivectors = false;
     }
