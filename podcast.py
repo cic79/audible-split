@@ -39,6 +39,8 @@ if not (img_name and img_link):
     sys.stderr.write('ERROR: Houston we have a problem! At least one image not found.')
     exit(1)
 
+img_link_base = 'https://m.media-amazon.com/images/I/51iKw5dFQoL.png'
+
 audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:itunes="https://www.itunes.com/dtds/podcast-1.0.dtd"
      xmlns:googleplay="https://www.google.com/schemas/play-podcasts/1.0" xmlns:atom="http://www.w3.org/2005/Atom"
@@ -49,8 +51,8 @@ audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
         <itunes:author>{performer}</itunes:author>
         <language>it-it</language>
         <itunes:name>{title}</itunes:name>
-        <itunes:image href="{img_link}"></itunes:image>
-        <googleplay:image href="{img_link}"></googleplay:image>
+        <itunes:image href="{img_link_base}"></itunes:image>
+        <googleplay:image href="{img_link_base}"></googleplay:image>
 '''
 audible_item = '''
         <item>
