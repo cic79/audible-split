@@ -1,45 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 from datetime import datetime, timedelta
-
-from bs4 import BeautifulSoup
-
+from urllib.parse import urljoin
+import shutil
+import requests
+import os
 # Url condiviso contenente i podcast:
-# https://www.dropbox.com/sh/2zbtmzxkk44qmgk/AACfbAgwyD0A9TAB3EdANO9ja?dl=0
-CONTENT = '''
-<html>
-<div role="table" ...></div>
-</html>
-'''
+basic_url = 'https://static.stage.quentrix.com/ow4geqh4/upfiles/pd/'
+podcast_dir = os.path.join(os.path.expanduser('~'), 'Downloads/audible/podcast')
+podcast_xml = os.path.join(podcast_dir, 'podcast.xml')
+podcast_zip = f'{podcast_dir}.zip'
+title_base = performer_base = 'Libriami'
+xml_link = urljoin(basic_url, 'podcast.xml')
+img_link_base = urljoin(basic_url, 'podcast.png')
+
 performer = title = ''
 podcasts = []
-xml_name = xml_link = img_name = img_link = None
-soup = BeautifulSoup(CONTENT, 'html.parser')
-results = soup.find(role='table').find_all('a')
-for result in results:
-    link = result.attrs['href'].split('?')[0] + '?dl=1'
-    filename = result.attrs['aria-label']
-    name, extension = filename.rsplit('.', 1)
-    if extension == 'xml':
-        xml_name = filename
-        xml_link = link
-    elif extension in ('png', 'jpg'):
-        performer, title = name.split(' - ', 1)
-        img_name = filename
-        img_link = link
-    else:
-        podcasts.append({'name': name, 'link': link})
-if not xml_name:
-    xml_name = 'podcast.xml'
-if not xml_link:
-    xml_link = 'https://www.dropbox.com/sh/2zbtmzxkk44qmgk/AADDzVZ5MiKH22ClrLqSVzJpa/podcast.xml?dl=0'
-if not (img_name and img_link):
-    sys.stderr.write('ERROR: Houston we have a problem! At least one image not found.')
-    exit(1)
-
-img_link_base = 'https://m.media-amazon.com/images/I/51iKw5dFQoL.png'
+img_link = {}
+for directory in os.listdir(podcast_dir):
+    absolute_directory = os.path.join(podcast_dir, directory)
+    if os.path.isdir(absolute_directory):
+        basic_url_directory = urljoin(basic_url, f'{directory}/')
+        for filename in os.listdir(absolute_directory):
+            absolute_filename = os.path.join(absolute_directory, filename)
+            if os.path.isfile(absolute_filename):
+                link = urljoin(basic_url_directory, filename)
+                name, extension = filename.rsplit('.', 1)
+                if extension in ('png', 'jpg'):
+                    performer, title = name.split(' - ', 1)
+                    img_name = filename
+                    img_link[directory] = link
+                else:
+                    podcasts.append({'name': name, 'link': link, 'directory': directory})
 
 audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:itunes="https://www.itunes.com/dtds/podcast-1.0.dtd"
@@ -47,10 +42,10 @@ audible_start = f'''<?xml version="1.0" encoding="UTF-8"?>
      version="2.0" xml:lang="it-IT">
     <channel>
         <atom:link href="{xml_link}" rel="self" type="application/rss+xml"></atom:link>
-        <title><![CDATA[{title}]]></title>
-        <itunes:author>{performer}</itunes:author>
+        <title><![CDATA[{title_base}]]></title>
+        <itunes:author>{performer_base}</itunes:author>
         <language>it-it</language>
-        <itunes:name>{title}</itunes:name>
+        <itunes:name>{title_base}</itunes:name>
         <itunes:image href="{img_link_base}"></itunes:image>
         <googleplay:image href="{img_link_base}"></googleplay:image>
 '''
@@ -75,11 +70,18 @@ date = date_now = datetime.now() - timedelta(days=1 * len(podcasts))
 date_delta = timedelta(days=1)
 for podcast in podcasts:
     date_now = date.strftime('%a, %-d %b %Y %X +0100')
-    audible += audible_item % {'performer': performer, 'title': title, 'img_link': img_link, 'date_now': date_now,
-                               'podcast_name': podcast['name'], 'podcast_link': podcast['link']}
+    audible += audible_item % {'performer': performer, 'title': title, 'img_link': img_link[podcast['directory']],
+                               'date_now': date_now, 'podcast_name': podcast['name'], 'podcast_link': podcast['link']}
     date += date_delta
 audible += audible_end
-with open('podcast.xml', 'w') as f:
+# todo: controllare se il file esiste già
+with open(podcast_xml, 'w') as f:
     f.write(audible)
+# todo: controllare se il file esiste già
+shutil.make_archive(os.path.splitext(podcast_zip)[0], 'zip', podcast_dir)
 
+with open(podcast_zip, 'rb') as f:
+    files = {'file': f}
+    response = requests.post('https://bashupload.com', files=files)
+print(response.text)
 sys.stdout.write(f'\npodcast.xml available at:\n{xml_link}')
