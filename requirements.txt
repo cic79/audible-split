@@ -14,7 +14,7 @@ packaging==24.1
 pep517==0.13.1
 pycparser==2.22
 requests==2.32.3
-setuptools==71.0.1
+setuptools==71.1.0
 soupsieve==2.5
 srt==3.5.3
 tomli==2.0.1
