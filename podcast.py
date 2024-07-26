@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 import sys
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
-import shutil
+
 import requests
-import os
+
 # Url condiviso contenente i podcast:
 basic_url = 'https://static.stage.quentrix.com/ow4geqh4/upfiles/pd/'
 podcast_dir = os.path.join(os.path.expanduser('~'), 'Downloads/audible/podcast')
@@ -20,11 +21,11 @@ img_link_base = urljoin(basic_url, 'podcast.png')
 performer = title = ''
 podcasts = []
 img_link = {}
-for directory in os.listdir(podcast_dir):
+for directory in sorted(os.listdir(podcast_dir)):
     absolute_directory = os.path.join(podcast_dir, directory)
     if os.path.isdir(absolute_directory):
         basic_url_directory = urljoin(basic_url, f'{directory}/')
-        for filename in os.listdir(absolute_directory):
+        for filename in sorted(os.listdir(absolute_directory)):
             absolute_filename = os.path.join(absolute_directory, filename)
             if os.path.isfile(absolute_filename):
                 link = urljoin(basic_url_directory, filename)
