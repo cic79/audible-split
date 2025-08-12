@@ -4,7 +4,7 @@ Split audible mp3 in chapters.
 
 # Requirements
 
-Python 3.8.15
+Python 3.12.7
 
 # How To use
 
