@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 import requests
 
 # Url condiviso contenente i podcast:
-basic_url = 'https://static.stage.quentrix.com/ow4geqh4/upfiles/pd/'
+basic_url = 'https://static-cache.quentrix.com/ow4geqh4/upfiles/pd/'
 podcast_dir = os.path.join(os.path.expanduser('~'), 'Downloads/audible/podcast')
 podcast_xml = os.path.join(podcast_dir, 'podcast.xml')
 podcast_zip = f'{podcast_dir}.zip'
